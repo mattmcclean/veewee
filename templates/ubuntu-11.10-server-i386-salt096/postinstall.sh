@@ -64,6 +64,7 @@ rm -rf zeromq-2.1.11
 # Install Salt dependencies
 apt-get -y install python-yaml python-m2crypto
 pip install pycrypto jinja2 msgpack-python
+easy_install pyzmq
 
 # Install Salt from source
 wget --no-check-certificate 'https://github.com/downloads/saltstack/salt/salt-0.9.6.tar.gz'
