@@ -92,6 +92,11 @@ umount /mnt
 
 rm VBoxGuestAdditions_$VBOX_VERSION.iso
 
+# Remove any zip, gz or tgz files from home dir
+rm /home/vagrant/*.zip
+rm /home/vagrant/*.gz
+rm /home/vagrant/*.tgz
+
 # Remove items used for building, since they aren't needed anymore
 apt-get -y remove linux-headers-$(uname -r) build-essential
 apt-get -y autoremove
