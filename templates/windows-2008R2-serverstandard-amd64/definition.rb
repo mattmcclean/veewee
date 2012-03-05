@@ -13,7 +13,6 @@ Veewee::Session.declare({
 
     :floppy_files => [
       "Autounattend.xml", # automate install and setup winrm
-      "cygwin-setup.exe",
       "install-cygwin-sshd.bat",
       "install-winrm.bat",
       "oracle-cert.cer"],

@@ -8,12 +8,10 @@ module Veewee
 #        include ::Veewee::Provider::Virtualbox::ProviderCommand
 
         def check_requirements
-          #unless gem_available?("virtualbox")
-            #raise Veewee::Error,"The Virtualbox Provider requires the gem 'virtualbox' to be installed"
-          #end
+          unless self.shell_exec("VBoxManage -v").status == 0
+            raise Veewee::Error,"Could not execute VBoxManage command. Please install Virtualbox or make sure VBoxManage is in the Path"
+          end
         end
-
-
 
       end #End Class
     end # End Module

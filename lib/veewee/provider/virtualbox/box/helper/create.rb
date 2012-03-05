@@ -36,16 +36,17 @@ module Veewee
           shell_exec("#{command}")
         end
 
-        def get_vm_location
+        def get_vbox_home
           command="#{@vboxcmd}  list  systemproperties"
-          shell_results=shell_exec("#{command}",{:mute => true})
+          shell_results=shell_exec("#{command}")
           location=shell_results.stdout.split(/\n/).grep(/Default machine/)[0].split(":")[1].strip
           return location
         end
 
 
         def suppress_messages
-          update_date=Time.now+86400
+          day=24*60*60
+          update_date=Time.now+365*day
 
           extraData = [
             ["Gui/RegistrationData","triesLeft=0"],
@@ -55,36 +56,17 @@ module Veewee
           ]
           extraData.each do |data|
             command="#{@vboxcmd} setextradata global '#{data[0]}' '#{data[1]}'"
-            shell_results=shell_exec("#{command}",{:mute => false})
+            shell_results=shell_exec("#{command}")
           end
 
         end
 
-
-        def create_floppy
-          # Todo Check for java
-          # Todo check output of commands
-
-          # Check for floppy
-          unless definition.floppy_files.nil?
-            require 'tmpdir'
-            temp_dir=Dir.mktmpdir
-            definition.floppy_files.each do |filename|
-              full_filename=full_filename=File.join(definition.path,filename)
-              FileUtils.cp("#{full_filename}","#{temp_dir}")
-            end
-            javacode_dir=File.expand_path(File.join(__FILE__,'..','..','..','..','..','..','java'))
-            floppy_file=File.join(definition.path,"virtualfloppy.vfd")
-            command="java -jar #{javacode_dir}/dir2floppy.jar '#{temp_dir}' '#{floppy_file}'"
-            shell_exec("#{command}")
-          end
-        end
 
         def create_disk
             env.ui.info "Creating new harddrive of size #{definition.disk_size.to_i} "
 
 
-            place=get_vm_location
+            place=get_vbox_home
             command ="#{@vboxcmd} createhd --filename '#{File.join(place,name,name+"."+definition.disk_format.downcase)}' --size '#{definition.disk_size.to_i}' --format #{definition.disk_format.downcase}"
             shell_exec("#{command}")
 
@@ -92,7 +74,7 @@ module Veewee
 
         def attach_disk
 
-          place=get_vm_location
+          place=get_vbox_home
           location=name+"."+definition.disk_format.downcase
 
           location="#{File.join(place,name,location)}"
@@ -108,7 +90,13 @@ module Veewee
         def attach_isofile
           full_iso_file=File.join(env.config.veewee.iso_dir,definition.iso_file)
           env.ui.info "Mounting cdrom: #{full_iso_file}"
-          #command => "${vboxcmd} storageattach '${vname}' --storagectl 'IDE Controller' --type dvddrive --port 1 --device 0 --medium '${isodst}' ";
+          command ="#{@vboxcmd} storageattach '#{name}' --storagectl 'IDE Controller' --type dvddrive --port 0 --device 0 --medium '#{full_iso_file}'"
+          shell_exec("#{command}")
+        end
+
+        def attach_guest_additions
+          full_iso_file=File.join(env.config.veewee.iso_dir,"VBoxGuestAdditions_#{self.vbox_version}.iso")
+          env.ui.info "Mounting guest additions: #{full_iso_file}"
           command ="#{@vboxcmd} storageattach '#{name}' --storagectl 'IDE Controller' --type dvddrive --port 1 --device 0 --medium '#{full_iso_file}'"
           shell_exec("#{command}")
         end
